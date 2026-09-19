@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-19",
+  "environment": "Windows; existing Python and Node dependencies reused from local deployment",
+  "backend": {"passed": 430, "skipped": 2, "warnings": 3, "seconds": 30.65, "command": "python -m pytest -x -q -p no:cacheprovider --basetemp <workspace-temp>"},
+  "frontend": {"passed": 75, "test_files": 12, "command": "node node_modules/vitest/vitest.mjs run --no-cache", "warning": "React act warning in dashboard accessibility test"},
+  "typescript": {"passed": true, "command": "node node_modules/typescript/bin/tsc -b"},
+  "production_build": {"passed": true, "command": "node node_modules/vite/bin/vite.js build --configLoader runner"},
+  "paid_model_calls": 0,
+  "limitations": ["No fresh dependency installation verification", "No new live provider or browser end-to-end verification", "Tests include inherited course tests", "Default cache and temp paths hit sandbox permission errors; successful runs used workspace temp and cache-free/config-runner modes"]
+}
