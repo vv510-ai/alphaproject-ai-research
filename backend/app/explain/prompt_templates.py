@@ -51,7 +51,11 @@ def _references(ctx: ExplainContext) -> str:
     if ctx.sector:
         sector_line = f"所属板块：{ctx.sector}"
         if ctx.sector_change_pct is not None:
-            sector_line += f"（今日涨幅 {ctx.sector_change_pct}%）"
+            sector_line += f"（最近行情涨跌幅 {ctx.sector_change_pct}%）"
+        if ctx.sector_as_of:
+            sector_line += f"，行情时间：{ctx.sector_as_of}"
+        if ctx.sector_source:
+            sector_line += f"，来源：{ctx.sector_source}"
         lines.append(sector_line)
     if ctx.industry:
         lines.append(f"行业：{ctx.industry}")

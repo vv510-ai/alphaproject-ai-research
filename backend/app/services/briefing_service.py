@@ -73,6 +73,13 @@ def _missing(name: str) -> DataBlock:
     return DataBlock(name=name, data=None, status=BlockStatus.missing)
 
 
+def _incomplete(block: DataBlock) -> bool:
+    return block.status == BlockStatus.missing or (
+        isinstance(block.data, dict)
+        and "missing" in block.data.get("availability", {}).values()
+    )
+
+
 class BriefingService:
     def __init__(
         self,
@@ -149,7 +156,7 @@ class BriefingService:
         - else version_hint (warmup if any block missing else full)
         """
         all_missing = all(b.status == BlockStatus.missing for b in blocks.values())
-        any_missing = any(b.status == BlockStatus.missing for b in blocks.values())
+        any_missing = any(_incomplete(b) for b in blocks.values())
 
         if all_missing:
             return BriefingContent(
@@ -166,6 +173,7 @@ class BriefingService:
             watchlist=blocks["watchlist"],
             news=blocks["news"],
             calendar=blocks["calendar"],
+            generated_at=self.clock().isoformat(),
         )
 
         body = ""
@@ -235,11 +243,11 @@ class BriefingService:
     def generate_and_push(self, *, is_followup: bool = False) -> None:
         blocks = self.fetch_blocks()
         # T012: hint version by trigger time
-        any_missing = any(b.status == BlockStatus.missing for b in blocks.values())
+        any_missing = any(_incomplete(b) for b in blocks.values())
         hint: BriefingVersion | None
         if all(b.status == BlockStatus.missing for b in blocks.values()):
             hint = None  # build_content will set placeholder
-        elif is_followup:
+        elif is_followup and not any_missing:
             hint = BriefingVersion.full
         elif any_missing:
             hint = BriefingVersion.warmup

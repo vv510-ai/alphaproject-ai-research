@@ -39,6 +39,7 @@ from app.integrations.akshare_adapter import (
     akshare_spot_fetcher,
 )
 from app.models.quote import DataStatus
+from app.integrations.research_data import ResearchData
 from app.push.lark_client import FailureKind, LarkClient, SendResult, build_default_client
 from app.services.anomaly_scheduler import is_trading_hours
 from app.services.anomaly_service import AnomalyService
@@ -194,7 +195,8 @@ def _kline_for_anomaly(code: str) -> list[float]:
 
 # ── F3 explain (real LLM if creds, else template_mode) ────────────────
 _news_source = NewsSource()
-_context_assembler = ContextAssembler(news=_news_source)
+_research_data = ResearchData()
+_context_assembler = ContextAssembler(news=_news_source, quote=_research_data)
 
 
 _llm_service = build_default_service(settings)
@@ -230,15 +232,15 @@ app.include_router(build_briefing_router(
 ))
 
 _market_source = MarketOverviewSource(
-    fetch_global=lambda: [],
+    fetch_global=_research_data.global_indices,
     fetch_yesterday=lambda: {
         idx.name: idx.point for idx in _quote_service.get_indices() if idx.point is not None
     },
-    fetch_sectors=lambda: [],
+    fetch_sectors=_research_data.sector_ranking,
 )
 _calendar_source = CalendarSource(
-    fetch_earnings=lambda: [],
-    fetch_econ=lambda: [],
+    fetch_earnings=_research_data.earnings_calendar,
+    fetch_econ=_research_data.economic_calendar,
 )
 _briefing_service = BriefingService(
     db_path=settings.DB_PATH,

@@ -1,0 +1,67 @@
+Timeout (0:00:12)!
+Thread 0x000011f0 (most recent call first):
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\socket.py", line 295 in accept
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\socket.py", line 627 in _fallback_socketpair
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 787 in _make_self_pipe
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\proactor_events.py", line 640 in __init__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\windows_events.py", line 316 in __init__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\events.py", line 720 in new_event_loop
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\events.py", line 823 in new_event_loop
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\runners.py", line 137 in _lazy_init
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\asyncio\runners.py", line 58 in __enter__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2357 in run
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\anyio\_core\_eventloop.py", line 77 in run
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\anyio\from_thread.py", line 532 in run_blocking_portal
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\threading.py", line 1012 in run
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00004f6c (most recent call first):
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\threading.py", line 355 in wait
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\concurrent\futures\_base.py", line 451 in result
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\anyio\from_thread.py", line 544 in start_blocking_portal
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\contextlib.py", line 137 in __enter__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\starlette\testclient.py", line 432 in _portal_factory
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\.tools\python\cpython-3.12.14-windows-x86_64-none\Lib\contextlib.py", line 137 in __enter__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\starlette\testclient.py", line 357 in handle_request
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 1014 in _send_single_request
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 979 in _send_handling_redirects
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 942 in _send_handling_auth
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 914 in send
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 825 in request
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\starlette\testclient.py", line 459 in request
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\httpx\_client.py", line 1053 in get
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\starlette\testclient.py", line 487 in get
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\tests\test_api_watchlist.py", line 22 in test_get_empty_list
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\python.py", line 166 in pytest_pyfunc_call
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\python.py", line 1720 in runtest
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 179 in pytest_runtest_call
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 245 in <lambda>
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 353 in from_call
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 244 in call_and_report
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 137 in runtestprotocol
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\runner.py", line 118 in pytest_runtest_protocol
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\main.py", line 396 in pytest_runtestloop
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\main.py", line 372 in _main
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\main.py", line 318 in wrap_session
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\main.py", line 365 in pytest_cmdline_main
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_callers.py", line 121 in _multicall
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_manager.py", line 120 in _hookexec
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pluggy\_hooks.py", line 512 in __call__
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\config\__init__.py", line 199 in main
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\_pytest\config\__init__.py", line 223 in console_main
+  File "D:\Desktop\\u91cf\u5316\u4ea4\u6613\u7cfb\u7edf\AlphaProject\backend\.venv\Lib\site-packages\pytest\__main__.py", line 9 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main

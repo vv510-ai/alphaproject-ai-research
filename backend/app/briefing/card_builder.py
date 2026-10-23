@@ -37,11 +37,13 @@ def _market_lines(blk: DataBlock) -> list[str]:
         out.append(f"- 外盘 {g.get('name')}: {g.get('change_pct')}%")
     y = d.get("yesterday") or {}
     if y:
-        sh = y.get("sh")
-        if sh is not None:
-            out.append(f"- 上证昨收 {sh}")
+        for name, value in y.items():
+            out.append(f"- {'上证昨收' if name == 'sh' else name} {value}")
     for s in d.get("sectors") or []:
         out.append(f"- 板块 {s.get('name')}: {s.get('change_pct')}%")
+    for key, label in (("global", "外盘"), ("sectors", "板块")):
+        if d.get("availability", {}).get(key) == "missing":
+            out.append(f"- {label}数据暂时获取失败")
     if not out:
         out.append("- 暂无数据")
     return out
@@ -89,6 +91,12 @@ def _calendar_lines(blk: DataBlock) -> list[str]:
     for c in d.get("econ") or []:
         t = c.get("time", "")
         lines.append(f"- 经济：{c.get('name', '')}{(' ' + t) if t else ''}")
+    for key, label in (("earnings", "财报日历"), ("econ", "经济日历")):
+        state = d.get("availability", {}).get(key)
+        if state == "missing":
+            lines.append(f"- {label}暂时获取失败")
+        elif state == "ready" and not d.get(key):
+            lines.append(f"- {label}：数据源当日无记录")
     if not lines:
         lines.append("- 暂无数据")
     return lines

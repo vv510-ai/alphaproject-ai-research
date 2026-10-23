@@ -1,72 +1,254 @@
-# AlphaProject · A 股行情与 AI 分析助手
+> 历史版本归档：此分支保留统一上线前的本地 AlphaProject 源码。当前活动版本请查看 [main 分支](https://github.com/vv510-ai/alphaproject-ai-research/tree/main)。旧服务已退役，勿用本分支覆盖当前生产服务。
 
-面向个人学习与本地演示的 AI 应用工程项目：查看自选股行情、历史 K 线、异动事件，并使用模型生成解释和本地盘前简报。**没有券商下单、策略回测、实盘收益或真实持仓接入。**
+# AlphaProject · A 股自动盯盘 AI 助手
 
-## 来源与改动范围
+> **当前学习入口（2026-10-15）**：[学习与升级路线](specs/learning/learning-roadmap.md)。本工作副本用于 Windows 开发，现有网站在阿里云运行；[部署说明](../deployment/aliyun/README.md)与[更新流程](../deployment/aliyun/UPDATE.md)记录实际部署。下方保留课程初稿介绍，阅读时请区分历史假设与当前实现。
 
-基于 [FuFan-VibeCodingCourse](https://github.com/fufankeji/FuFan-VibeCodingCourse) 阶段八第 16 课 AlphaProject，基线提交 `5336ede159a7ac2ce0ee136324fe5bffd56970ca`。上游已提供主要业务结构、页面、规则、测试和模型降级框架。本仓库记录 Windows 部署适配、接口联调修复与 DeepSeek 接入实践，使用 AI 编程工具辅助；不将上游实现或 AI 生成代码等同于个人独立手写成果。
+> 本地 Mac 常驻的个人盯盘工具：**Web Dashboard + 飞书推送**
+> 一屏看完自选股 · 60 秒内推送 4 类异动 · AI 解释 ≤200 字 · 工作日 09:15 早盘简报
+> MVP 6 周 · 月成本 ≤ 100 元 · **不下单 / 不对外 / 不收费**
 
-本地版本的增量包括：SQLite 连接释放、行情/新闻/简报字段适配、普通涨跌被误标为涨跌停的修复、DeepSeek 调用参数与超时控制、盘前简报成本记账、Windows 本地服务入口。
-
-详见 [改动与证据](docs/CONTRIBUTIONS.md)、[测试范围](docs/VERIFICATION.md)。文件差异只能证明版本变化，不能单独证明作者或独立掌握程度。
-
-## 技术与链路
-
-FastAPI / Python · React / TypeScript / Vite · SQLite · AKShare / 腾讯行情 · OpenAI-compatible API
-
-```mermaid
-flowchart LR
-  A[行情与新闻来源] --> B[适配器与数据状态]
-  B --> C[自选股 / K线 / 异动规则]
-  C --> D[上下文组装]
-  D --> E[缓存与估算预算检查]
-  E --> F[模型主备与本地链路]
-  F --> G[解释 / 简报]
-  E --> H[规则模板]
-  F --> H
-  G --> I[SQLite与Web页面]
-  H --> I
+```
+后端 FastAPI + APScheduler + SQLite      前端 Vite + React 19 + Tailwind v4
+akshare（主）+ Tushare Pro（补）          shadcn/ui + Material Symbols
+lark-oapi（飞书推送）                     TradingView Lightweight Charts
+OpenAI-compatible LLM（DeepSeek/Qwen/Ollama 三级降级）
 ```
 
-预算是基于 token 单价估计的软阈值；请求前检查不能保证并发下绝对不超支。主备/本地链路有代码不代表每个供应商都已真实验证。
+---
 
-## 本地运行
+## 1 · 截图速览
 
-要求 Python 3.11 或 3.12、Node.js 20+、npm。以下命令在仓库根目录的 PowerShell 执行。
+> 截图存放路径：`docs/screenshots/`。用 macOS Cmd+Shift+4 截图后拖入即可（详见 §6.4）。
 
-```powershell
-Copy-Item .env.example .env
-py -3.12 -m venv backend/.venv
-& backend/.venv/Scripts/python.exe -m pip install uv
-Push-Location backend
-& .venv/Scripts/python.exe -m uv sync --frozen
-Pop-Location
-Push-Location frontend
-npm ci
-npm run build
-Pop-Location
-& backend/.venv/Scripts/python.exe -m uvicorn app.local:app --app-dir backend --host 127.0.0.1 --port 8000
+### 总览看板 · Dashboard
+真实 akshare 行情 + 30 日趋势线 + KPI 速览 + 今日最强/最弱
+![Dashboard](docs/screenshots/01-dashboard.png)
+
+### 早盘简报 · Morning Briefing
+工作日 09:15 自动生成 · 4 区块（全球市场 / 自选 AI 洞察 / 隔夜要闻 / 今日日程）
+![Morning Briefing](docs/screenshots/02-briefing.png)
+
+### 异动日志 · Alert Logs
+垂直时间线 · 推送状态 · AI 解释 · 风险尾标
+![Alert Logs](docs/screenshots/03-alerts.png)
+
+### 单股详情 · Stock Detail
+display-price 大字 · K 线分时切换 · AI「为什么」按钮 · 相关新闻
+![Stock Detail](docs/screenshots/04-detail.png)
+
+---
+
+## 2 · 功能（F1–F6 · MVP P0）
+
+| ID | 模块 | 一句话 | 关联 |
+|----|------|--------|------|
+| F1 | 自选股 Dashboard | 一屏看完 + 60s 自动刷新 + 异动徽章 | US-01 / US-05 |
+| F2 | 异动检测推送 | 涨跌停 / 突破 / 量能 / 振幅 / 事件 5 类规则 60s 内推 | US-02 |
+| F3 | LLM 异动解释 | ≤200 字 · DeepSeek 主 / Qwen 备 / Ollama 兜底 · 必附风险尾标 | US-04 |
+| F4 | 早盘简报 | 工作日 09:15 自动 · 飞书 Markdown 卡片 · 4 区块 | US-03 |
+| F5 | 自选股 CRUD | 增删改分组 · 上限 30 只 · 持仓上限 5 只 | US-05 |
+| F6 | 飞书推送通道 | lark-oapi Lark App · 限频 + dedup + 重试 + 未送达队列 | US-02/03/04 |
+
+详情见 `specs/prd.md` 与各 feature 的 `specs/00X-*/spec.md`。
+
+---
+
+## 3 · 快速上手
+
+### 3.1 环境要求
+
+- macOS 13+（其他平台未测试，路径用绝对路径应该也行）
+- Python **3.11**（uv 自动管理）
+- Node 18+ + pnpm 9+
+- 飞书账号一个（个人或公司都行，需开放平台创建自建应用）
+- 任一 OpenAI 兼容的 LLM API Key（DeepSeek / Qwen / OpenRouter 都行）
+
+### 3.2 5 分钟跑起来
+
+```bash
+# 1. 克隆 + 装依赖
+git clone <repo-url> AlphaProject && cd AlphaProject
+
+# 2. 凭证模板复制 + 填值（如何拿见 §4）
+cp .env.example .env
+$EDITOR .env
+
+# 3. 后端
+cd backend
+uv sync                                # 装 Python 依赖
+uv run python -m uvicorn app.main:app --port 8000 --reload
+
+# 4. 前端（新开终端）
+cd frontend
+pnpm install
+pnpm dev                               # 默认 http://localhost:5173
+
+# 5. 加几只自选股（任选其一）
+#    A. 浏览器打开 Dashboard → 点「+ 管理」
+#    B. 命令行：
+curl -X POST http://127.0.0.1:8000/watchlist \
+  -H 'Content-Type: application/json' \
+  -d '{"code":"600519","name":"贵州茅台","is_holding":true}'
 ```
 
-打开 `http://127.0.0.1:8000`。不填模型密钥时为模板模式，真实行情仍依赖外网；不要将模板输出当成模型成功。密钥只填本地 `.env`。示例单价来自本地验证配置，需按服务商当前计费维护；历史模型名称也不保证未来可用。
+### 3.3 验证联通
 
-```powershell
-Push-Location backend
-& .venv/Scripts/python.exe -m pytest -q
-Pop-Location
-Push-Location frontend
-npm test
-Pop-Location
+| 链路 | 验证命令 | 期望 |
+|------|---------|------|
+| 后端启动 | `curl http://127.0.0.1:8000/health` | `{"status":"ok"}` |
+| 行情拉取 | `curl http://127.0.0.1:8000/quotes/snapshot` | 含 rows 数组与 session_label |
+| 飞书推送 | 浏览器打开 Dashboard → 触发任一异动 | 飞书目标群收到卡片 |
+| AI 解释 | `curl -X POST http://127.0.0.1:8000/explain -d '{"code":"600519","signal":"limit_up"}'` | 返回 ≤200 字中文 + 风险尾标 |
+
+---
+
+## 4 · 凭证配置（不要暴露 Key）
+
+> **铁律：`.env` 已在 `.gitignore`，永不提交。**
+> 模板 `.env.example` 只有变量名 + 来源说明，不含任何 Key。
+
+### 4.1 飞书 Lark App（F6 推送出口）
+
+| 步骤 | 操作 | 落到哪个变量 |
+|------|------|------------|
+| ① 登 [open.feishu.cn](https://open.feishu.cn) | 「开发者后台」→「创建企业自建应用」 | — |
+| ② 凭证与基础信息 | 复制 App ID + App Secret | `LARK_APP_ID` / `LARK_APP_SECRET` |
+| ③ 权限管理 | 开通「获取与发送单聊、群组消息」(`im:message`) 与「获取群组信息」(`im:chat:readonly`) | — |
+| ④ 版本管理 | 创建版本 `1.0.1` → 确认发布 | — |
+| ⑤ 拿群 chat_id | 把 bot 加进目标群后运行下面的本地辅助脚本 | `LARK_RECEIVE_ID` |
+| ⑥ 接收方类型 | 默认 `chat_id`（群）；私聊填 `open_id` 或 `user_id` | `LARK_RECEIVE_ID_TYPE` |
+
+> 详细权限矩阵见 `specs/002-feishu-push-channel/plan.md`。
+
+#### 本地安全配置
+
+1. 在飞书「凭证与基础信息」页面复制 **App Secret**，只粘贴到本机 `AlphaProject/.env` 的 `LARK_APP_SECRET=` 行；不要把它发到聊天、截图或提交到 Git。
+2. 把机器人加入目标群。若列群脚本返回权限不足，在飞书权限管理中补充群聊读取权限后重试。
+3. 在 `AlphaProject/backend` 目录运行：
+
+   ```powershell
+   .\.venv\Scripts\python.exe ..\scripts\configure_feishu.py
+   ```
+
+   脚本只显示群名称和 `chat_id`，让你选择目标群并写入 `LARK_RECEIVE_ID`，不会发送测试消息，也不会打印 App Secret。
+4. 重启后端，再查看 `http://127.0.0.1:8000/push/status`，确认 `lark_configured=true`。
+
+### 4.2 LLM API Key（F3 解释 + F4 简报）
+
+任一 openai-compatible 端点都行 —— 主备链 + 本地兜底三级：
+
+| 角色 | 推荐 | base_url 示例 | model 示例 |
+|------|------|--------------|----------|
+| 主 (PRIMARY) | DeepSeek 直连 | `https://api.deepseek.com/v1` | `deepseek-chat` |
+| 主 (PRIMARY) | OpenRouter aggregator | `https://openrouter.ai/api/v1` | `deepseek/deepseek-chat` |
+| 备 (BACKUP) | 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` |
+| 兜底 (OLLAMA) | 本地 ollama | `http://127.0.0.1:11434` | `qwen2.5:7b` |
+
+`LLM_DAILY_BUDGET=5` 表示单日 5 元上限，超额自动降级 Ollama（PRD §7.8）。
+
+### 4.3 Tushare（可选 · 补强财报/龙虎榜）
+
+[tushare.pro](https://tushare.pro/) 注册 → 捐 500 元拿 5000 积分 → 填 `TUSHARE_TOKEN`。
+**留空也能跑** —— akshare 免费通道已覆盖行情主链路。
+
+### 4.4 安全清单
+
+- [x] `.env` 在 `.gitignore`
+- [x] `.mcp.json` 在 `.gitignore`（含 MCP server key）
+- [x] `.env.example` 不含真值，只有变量名 + 来源说明
+- [x] Dashboard 默认 `127.0.0.1` 监听（公网访问走 Tailscale，PRD §7.3）
+- [x] 推送内容禁含 PII；AI 文本禁含买卖建议词（合规自律）
+
+---
+
+## 5 · 项目结构
+
+```
+AlphaProject/
+├── .env                       # 真实凭证（gitignored）
+├── .env.example               # 模板（提交，不含真值）
+├── backend/
+│   ├── app/
+│   │   ├── api/               # FastAPI 路由（quotes / watchlist / push / explain / briefing）
+│   │   ├── services/          # 业务层（quote / kline / anomaly / briefing / push / llm）
+│   │   ├── integrations/      # akshare_adapter / lark_client / llm_client
+│   │   └── main.py            # 启动入口（APScheduler + lifespan）
+│   ├── tests/                 # pytest
+│   └── pyproject.toml
+├── frontend/
+│   ├── src/
+│   │   ├── pages/             # Dashboard / MorningReport / AlertLogs / StockDetail / Settings
+│   │   ├── components/shell/  # AppShell / Sidebar / Topbar / Mi（Material Symbols）
+│   │   ├── store/             # zustand（dashboardStore / watchlistStore）
+│   │   └── services/sdk.ts    # 与后端的契约层
+│   ├── index.html             # Inter / JetBrains Mono / Material Symbols
+│   └── package.json
+├── specs/
+│   ├── prd.md                 # PRD v1.1
+│   ├── research/              # 06 架构基线 / 05 决策汇总 / 03 开源项目
+│   ├── design-reference/      # Stitch 视觉原型（仅参考，不抄代码）
+│   └── 00{1..6}-*/            # 6 个 feature 的 spec/plan/tasks
+├── docs/screenshots/          # README 用截图
+└── scripts/screenshot.sh      # 截图助手
 ```
 
-## 当前限制
+---
 
-- 默认只在本机回环地址运行；没有完成面向公网的认证、安全和并发验收。
-- 个股公告、全球行情等存在缺失或未接入路径，页面不能把缺失数据当正常结果。
-- 飞书目标群消息发送、真实开市时段定时任务尚无完整验收；本仓库不自动配置外部消息目标。
-- 历史记录中的真实模型请求仅证明当时样本成功，不代表长期可用或分析正确。
-- 测试数量包含上游测试，不是个人原创测试数量，也不衡量投资效果。
+## 6 · 开发与运维
 
-## 许可
+### 6.1 测试
 
-上游根目录 README 声明 MIT License，当前取得的源码中未发现独立 LICENSE 文件。本仓库保留 [上游来源与许可声明](THIRD_PARTY_NOTICES.md)，不冒充原作者，也不替第三方素材授予额外许可。
+```bash
+cd backend  && uv run pytest                  # 后端单测（pytest）
+cd frontend && pnpm test -- --run             # 前端单测（vitest + RTL）
+```
+
+### 6.2 调度任务
+
+| 任务 | cron | 实现 |
+|------|------|------|
+| 异动扫描 | 每 60 秒 · 9:30-11:30 / 13:00-15:00 | `AnomalyService.scan_cycle` |
+| 早盘简报 | 工作日 09:15:00 | `BriefingService.generate_and_push` |
+| 未送达回放 | 启动时一次 + 每 5 分钟 | `PushService.retry_undelivered` |
+
+### 6.3 关停 / 重启
+
+```bash
+# 找进程
+ps aux | grep -E "uvicorn|vite" | grep -v grep
+# 关停后端
+pkill -f "app.main:app"
+# 关停前端
+pkill -f "vite"
+```
+
+### 6.4 自己拍截图
+
+```bash
+# 1. 启动两端 → 浏览器开 http://localhost:5173/
+# 2. 调好画面（Dashboard/简报/异动/详情，逐个切）
+# 3. Cmd+Shift+4 → 框选 → 默认存到 ~/Desktop
+# 4. 拷贝到 docs/screenshots/，命名 01-dashboard.png 等
+mv ~/Desktop/截屏*.png docs/screenshots/01-dashboard.png
+# 或用 helper：
+./scripts/screenshot.sh 01-dashboard
+```
+
+---
+
+## 7 · 反模式（禁止条款）
+
+详见 `CLAUDE.md §8`，关键 4 条：
+
+1. **不下单 / 不卖建议 / 不打监管擦边** —— PRD §2.3 + §7.4 红线
+2. **AI 文本必附** "以上为信息整理，不构成投资建议" + 禁含"建议买入 / 强烈推荐 / 目标价"
+3. **A 股配色：红涨绿跌**（与欧美相反） —— Constitution FD-3
+4. **凭证不入 git**，本地加密存储 —— PRD §7.3
+
+---
+
+## 8 · License
+
+个人非商用项目，未对外发行。源码仅本人使用，**禁止 fork 后对外提供 SaaS 服务**（依赖的
+akshare / Tushare ToS 均为非商用授权，详见 `specs/research/05-决策汇总.md` §7.1）。

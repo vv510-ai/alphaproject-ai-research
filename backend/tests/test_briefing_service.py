@@ -24,6 +24,27 @@ def test_local_preview_persists_without_sending(db_path):
     assert push.sent == []
 
 
+def test_missing_subfeed_never_claims_complete_followup(db_path):
+    market = _ready_market_src()
+    market.fetch.return_value.data['availability'] = {'sectors': 'missing'}
+    service = _build_service(db_path=db_path, market=market,
+        llm=_StubLLM(LLMResponse(text='仅整理可用事实', source='llm_primary', cost_cny=0)))
+    service.generate_and_push(is_followup=True)
+    record = get_briefing_by_date(db_path, service.clock().date().isoformat())
+    assert record['version'] == 'warmup'
+
+
+def test_regeneration_updates_archive_time(db_path):
+    import sqlite3
+    service = _build_service(db_path=db_path)
+    first = service.generate_local()
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("UPDATE briefing_record SET created_at='2000-01-01 00:00:00'")
+    second = service.generate_local()
+    assert second['on_date'] == first['on_date']
+    assert second['created_at'] != '2000-01-01 00:00:00'
+
+
 # ── fixtures & helpers ────────────────────────────────────────────────
 @pytest.fixture
 def db_path(tmp_path: Path) -> Path:

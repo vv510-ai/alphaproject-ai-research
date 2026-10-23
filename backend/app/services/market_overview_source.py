@@ -53,6 +53,9 @@ class MarketOverviewSource:
             return DataBlock(name="market_overview", data=None, status=BlockStatus.missing)
         return DataBlock(
             name="market_overview",
-            data={"global": g, "yesterday": y, "sectors": s},
+            data={"global": g, "yesterday": y, "sectors": s,
+                  "availability": {"global": "ready" if g_ok else "missing",
+                                   "yesterday": "ready" if y_ok else "missing",
+                                   "sectors": "ready" if s_ok else "missing"}},
             status=BlockStatus.ready,
         )

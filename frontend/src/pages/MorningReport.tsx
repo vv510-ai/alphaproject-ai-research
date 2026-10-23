@@ -13,12 +13,14 @@ interface BriefingRow {
 }
 
 interface BriefingDetail extends BriefingRow { content_json: string; }
+interface MarketRow { name: string; change_pct: number; as_of?: string; source?: string; }
+interface CalendarRow { code?: string; event?: string; name?: string; time?: string; date?: string; source?: string; }
 interface BriefingContent {
   body_text?: string;
-  market_overview?: { data?: { yesterday?: Record<string, number>; global?: unknown[] } };
+  market_overview?: { data?: { yesterday?: Record<string, number>; global?: MarketRow[]; sectors?: MarketRow[]; availability?: Record<string, string> } };
   watchlist?: { data?: { code: string; name: string }[] };
   news?: { data?: { title: string }[] };
-  calendar?: { data?: { earnings?: unknown[]; econ?: unknown[] } };
+  calendar?: { data?: { earnings?: CalendarRow[]; econ?: CalendarRow[]; availability?: Record<string, string> } };
   market_summary?: string;
   watchlist_summary?: string;
   news_summary?: string;
@@ -88,11 +90,25 @@ export function MorningReport() {
       const raw: BriefingContent = JSON.parse(detail.content_json);
       return {
         ...raw,
-        market_summary: raw.market_summary || Object.entries(raw.market_overview?.data?.yesterday ?? {})
-          .map(([name, value]) => `${name}：${value}`).join("\n") || "暂无市场数据",
+        market_summary: raw.market_summary || [
+          ...Object.entries(raw.market_overview?.data?.yesterday ?? {}).map(([name, value]) => `${name}：${value}`),
+          ...(raw.market_overview?.data?.global ?? []).map(item => `外盘 ${item.name}：${item.change_pct}%${item.as_of ? `（${item.as_of}）` : ""}`),
+          ...(raw.market_overview?.data?.sectors ?? []).map(item => `板块 ${item.name}：${item.change_pct}%${item.as_of ? `（${item.as_of}）` : ""}${item.source ? ` · ${item.source}` : ""}`),
+          ...Object.entries(raw.market_overview?.data?.availability ?? {}).filter(([, state]) => state === "missing")
+            .map(([key]) => `${({ global: "外盘", yesterday: "A 股指数", sectors: "板块" } as Record<string, string>)[key] ?? key}数据暂时获取失败`),
+        ].join("\n") || "暂无市场数据",
         watchlist_summary: raw.watchlist_summary || raw.watchlist?.data?.map((item) => `${item.name}（${item.code}）`).join("\n") || "暂无自选股",
         news_summary: raw.news_summary || raw.news?.data?.map((item) => `• ${item.title}`).join("\n") || "暂无新闻数据",
-        calendar_summary: raw.calendar_summary || "课程版本尚未接入财报与经济日历。",
+        calendar_summary: raw.calendar_summary || [
+          ...(raw.calendar?.data?.earnings ?? []).map(item => `财报 ${item.code ?? ""} ${item.event ?? ""} ${item.date ?? ""} · ${item.source ?? ""}`),
+          ...(raw.calendar?.data?.econ ?? []).map(item => `经济 ${item.time ?? ""} ${item.name ?? ""} · ${item.source ?? ""}`),
+          ...(["earnings", "econ"] as const).flatMap(key => {
+            const label = key === "earnings" ? "财报日历" : "经济日历";
+            const state = raw.calendar?.data?.availability?.[key];
+            return state === "missing" ? [`${label}暂时获取失败`] :
+              state === "ready" && !raw.calendar?.data?.[key]?.length ? [`${label}：数据源当日无记录`] : [];
+          }),
+        ].join("\n") || "暂无日历数据",
       };
     } catch { return {}; }
   })();
@@ -105,7 +121,7 @@ export function MorningReport() {
           <h2 className="font-headline-sm text-headline-sm text-on-surface mb-2">历史归档</h2>
           <button type="button" onClick={() => void generateLocal()} disabled={generating}
             className="mb-3 px-3 py-2 rounded bg-primary/10 text-primary border border-primary/30 font-mono-label text-mono-label disabled:opacity-50">
-            {generating ? "生成中…" : "生成当前简报（仅本机）"}
+            {generating ? "生成中…" : "生成当前简报（不推送）"}
           </button>
           {error && <p role="alert" className="text-bull font-caption text-caption mb-2">{error}</p>}
           <div className="relative">
@@ -142,7 +158,7 @@ export function MorningReport() {
                   </span>
                 </div>
                 <div className={`font-caption text-caption truncate ${isActive ? "text-on-surface-variant" : "text-outline"}`}>
-                  {row.version === "raw" ? "规则数据版" : row.version} · {row.push_status === "delivered" ? "已送达" : row.push_status === "local_only" ? "仅本机" : row.push_status}
+                  {row.version === "raw" ? "规则数据版" : row.version} · {row.push_status === "delivered" ? "已送达" : row.push_status === "local_only" ? "网页预览" : row.push_status}
                 </div>
               </button>
             );
@@ -176,7 +192,7 @@ export function MorningReport() {
                 </p>
               </header>
 
-              <Card title="市场收盘概览" icon="public" iconTone="primary">
+              <Card title="市场行情概览" icon="public" iconTone="primary">
                 <p className="px-4 pb-4 font-ai-commentary text-ai-commentary text-on-surface-variant whitespace-pre-wrap">
                   {content.market_summary || "数据获取中…"}
                 </p>

@@ -46,6 +46,8 @@ class NewsItem(BaseModel):
 class ExplainContext(BaseModel):
     sector: str | None = None
     sector_change_pct: float | None = None
+    sector_as_of: str | None = None
+    sector_source: str | None = None
     industry: str | None = None
     news: list[NewsItem] = Field(default_factory=list)
     announcements: list[NewsItem] = Field(default_factory=list)

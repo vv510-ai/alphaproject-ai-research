@@ -1,0 +1,61 @@
+{
+  "checked_utc": "2026-10-15T12:44:40.455749+00:00",
+  "status": "passed",
+  "python": "3.12.14",
+  "scope": "local Watchlist service + repository + SQLite, two independent processes",
+  "observations": [
+    {
+      "action": "write",
+      "pid": 22680,
+      "rows": [
+        {
+          "code": "000001",
+          "name": "学习样例",
+          "group_id": null,
+          "is_holding": true,
+          "display_order": 0,
+          "joined_at": "2026-10-15T20:44:39.849096"
+        }
+      ],
+      "duplicate_rejected": true
+    },
+    {
+      "action": "read_after_restart",
+      "pid": 16960,
+      "rows": [
+        {
+          "code": "000001",
+          "name": "学习样例",
+          "group_id": null,
+          "is_holding": true,
+          "display_order": 0,
+          "joined_at": "2026-10-15T20:44:39.849096"
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "backend/app/api/watchlist.py": "2630aa91828423abae8115a2fec0f15b117306408cc661b2fdaba513872625c6",
+    "backend/app/config.py": "68ef80407fd2a33f18e44067b59053f69b8eba78f3831ac5a3c576e7d0fd41a1",
+    "backend/app/db.py": "ef3d195e42a6e67fbeb60e0fc8c4d3cfd8180e8e0fcc42cb1275ba3f53636476",
+    "backend/app/errors.py": "4cbf241ab09051b6168a11ba0022c0e1368dd7c431616267bc96d7ba6e674020",
+    "backend/app/models/watchlist.py": "56c3655384650ea1c6f21da45a2f82997f870bffa0a95c344625d253a3b0a4ef",
+    "backend/app/repositories/watchlist_repo.py": "58bb3b5b8ff07cc26ca29ff90e8df744d7fa06745d6377c209d284f3b22e9e88",
+    "backend/app/services/watchlist_service.py": "ea3f4d95de06c84315fb5a642c4d7c07cc20e97563284b41f8ccb3959e27d4fa",
+    "backend/app/services/stock_basic_service.py": "625d28db5716c80f3f965bf12e2fca22735c32d5848ca7aab51de57d050ea0a6",
+    "backend/app/events/watchlist_events.py": "ebb12cb82c98cc4a69bd2a279d72f4f6526a276c2c815daa0a9d0e6ad1a7497f",
+    "backend/pyproject.toml": "f0c8695f492f438ef36a1c58f628d8464dedd1c64e4128e260baee61f23c6b0f",
+    "backend/uv.lock": "7feee2620c9f0270cf623b6cab25b9b16c0e8433bd7f5ab99facd6c1543818bf",
+    "specs/learning/watchlist_persistence_demo.py": "eb649996f44c92ed4d109a641d81a6b6c2bcac691596427ec74c465afb146116"
+  },
+  "temporary_database_removed": true,
+  "not_verified": [
+    "HTTP/API transport",
+    "browser interaction",
+    "production",
+    "market data",
+    "LLM",
+    "Feishu",
+    "scheduler"
+  ]
+}

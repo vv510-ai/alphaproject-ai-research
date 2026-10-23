@@ -39,6 +39,8 @@ class CalendarSource:
             return DataBlock(name="calendar", data=None, status=BlockStatus.missing)
         return DataBlock(
             name="calendar",
-            data={"earnings": e, "econ": c},
+            data={"earnings": e, "econ": c,
+                  "availability": {"earnings": "ready" if e_ok else "missing",
+                                   "econ": "ready" if c_ok else "missing"}},
             status=BlockStatus.ready,
         )

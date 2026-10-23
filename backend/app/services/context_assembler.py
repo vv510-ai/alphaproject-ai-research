@@ -32,21 +32,23 @@ class ContextAssembler:
         self.news = news
         self.quote = quote
 
-    def _sector(self, code: str) -> tuple[str | None, float | None, str | None, bool]:
+    def _sector(self, code: str) -> tuple:
         """Return (sector, sector_pct, industry, ok). ok=False ⇒ partial."""
         if self.quote is None:
-            return None, None, None, False
+            return None, None, None, False, None, None
         try:
             info = self.quote.sector_info(code) or {}
             return (
                 info.get("sector"),
                 info.get("sector_change_pct"),
                 info.get("industry"),
-                True,
+                bool(info.get("sector") and info.get("sector_change_pct") is not None),
+                info.get("sector_as_of"),
+                info.get("sector_source"),
             )
         except Exception as exc:
             logger.warning("quote.sector_info(%s) failed: %s", code, exc)
-            return None, None, None, False
+            return None, None, None, False, None, None
 
     def _filter_relevant(
         self, items: list[NewsItem], keywords: list[str], cap: int
@@ -64,7 +66,7 @@ class ContextAssembler:
         return out
 
     def assemble(self, *, code: str, name: str) -> ExplainContext:
-        sector, sector_pct, industry, quote_ok = self._sector(code)
+        sector, sector_pct, industry, quote_ok, sector_as_of, sector_source = self._sector(code)
 
         keywords = [name, code]
         if industry:
@@ -96,6 +98,8 @@ class ContextAssembler:
         return ExplainContext(
             sector=sector,
             sector_change_pct=sector_pct,
+            sector_as_of=sector_as_of,
+            sector_source=sector_source,
             industry=industry,
             news=filtered_news,
             announcements=filtered_ann,

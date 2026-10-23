@@ -140,7 +140,7 @@ def save_briefing(
             "VALUES(?,?,?,?) "
             "ON CONFLICT(on_date) DO UPDATE SET "
             "content_json=excluded.content_json, version=excluded.version, "
-            "push_status=excluded.push_status",
+            "push_status=excluded.push_status, created_at=CURRENT_TIMESTAMP",
             (on_date, content_json, version, push_status),
         )
 

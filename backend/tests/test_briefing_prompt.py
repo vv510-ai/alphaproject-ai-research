@@ -13,6 +13,7 @@ def test_prompt_contains_4_sections_and_word_limit():
         watchlist=_blk("watchlist", []),
         news=_blk("news", []),
         calendar=_blk("calendar", {"earnings": [], "econ": []}),
+        generated_at="2026-10-14T23:51:00+08:00",
     )
     assert len(msgs) == 2
     sys = msgs[0]["content"]
@@ -21,6 +22,8 @@ def test_prompt_contains_4_sections_and_word_limit():
     assert "财联社最新要闻" in sys
     assert "今日日历" in sys
     assert "1200" in sys
+    assert "简报日期：2026-10-14" in msgs[1]['content']
+    assert "可能处于盘中" in sys
 
 
 def test_prompt_user_carries_block_facts():

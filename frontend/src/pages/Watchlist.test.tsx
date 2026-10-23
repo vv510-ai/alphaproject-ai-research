@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Watchlist } from "./Watchlist";
 import { useWatchlistStore } from "../store/watchlistStore";
+import { Toaster } from "sonner";
 
 let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -33,6 +34,38 @@ const itemMaotai = {
 };
 
 describe("Watchlist page", () => {
+  it("searches, adds, shows duplicate feedback and reloads server records on remount", async () => {
+    let saved: typeof itemMaotai[] = [];
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (url.startsWith("/watchlist:search")) return jsonResp([{ code: "600519", name: "贵州茅台" }]);
+      if (url === "/watchlist/groups") return jsonResp([]);
+      if (url === "/watchlist" && init?.method === "POST") {
+        expect(JSON.parse(String(init.body))).toEqual({ code: "600519", name: "贵州茅台" });
+        if (saved.length) return jsonResp({ detail: "该股票已存在" }, 400);
+        saved = [itemMaotai];
+        return jsonResp(itemMaotai, 201);
+      }
+      if (url === "/watchlist") return jsonResp(saved);
+      return jsonResp(null, 404);
+    });
+    const page = render(<><Watchlist /><Toaster /></>);
+    await userEvent.click(screen.getByRole("button", { name: "管理自选股" }));
+    await userEvent.type(screen.getByLabelText("搜索股票"), "贵州茅台");
+    await userEvent.click(await screen.findByRole("button", { name: /600519 贵州茅台/ }));
+    expect(await screen.findByText("已加入自选 · 贵州茅台")).toBeInTheDocument();
+    expect(screen.getByText("1/30")).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText("搜索股票"), "600519");
+    await userEvent.click(await screen.findByRole("button", { name: /600519 贵州茅台/ }));
+    expect(await screen.findByText("该股票已存在")).toBeInTheDocument();
+    expect(saved).toHaveLength(1);
+    page.unmount();
+    useWatchlistStore.setState({ items: [], groups: [], loading: false, error: null });
+    render(<Watchlist />);
+    await waitFor(() => expect(screen.getByText("1/30")).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "管理自选股" }));
+    expect(screen.getByText("贵州茅台")).toBeInTheDocument();
+  });
+
   it("renders title + 0/30 counter when empty", async () => {
     fetchMock.mockImplementation((url: string) => {
       if (url === "/watchlist") return jsonResp([]);

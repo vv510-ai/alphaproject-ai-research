@@ -5,6 +5,7 @@
  * Inactive: hover:bg-surface-container-high + border-l-4 border-transparent
  */
 import { Mi } from "./Mi";
+import { useEffect, useState } from "react";
 
 export type PageKey = "dashboard" | "morning" | "alerts" | "settings";
 
@@ -27,6 +28,17 @@ const ITEMS: Item[] = [
 ];
 
 export function Sidebar({ active, onNavigate }: Props) {
+  const [isCloud, setIsCloud] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/runtime/status")
+      .then((response) => response.ok ? response.json() : null)
+      .then((status) => {
+        if (!cancelled && status) setIsCloud(status.instance_id === "aliyun-private");
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   return (
     <aside className="hidden md:flex fixed left-0 top-12 h-[calc(100vh-3rem)] w-64 flex-col z-40 bg-surface-container-low dark:bg-surface-container-low border-r border-surface-border dark:border-surface-border shadow-none transition-all duration-150 ease-in-out">
       <div className="p-4 border-b border-surface-border">
@@ -59,8 +71,10 @@ export function Sidebar({ active, onNavigate }: Props) {
         })}
       </nav>
       <div className="p-4 border-t border-surface-border text-outline font-caption text-caption">
-        本地运行 · 关闭网页后仍继续盯盘。<br />
-        结束运行请双击「停止系统」。
+        {isCloud === true ? "云端运行" : isCloud === false ? "本地运行" : "后台服务"} · 关闭网页后仍继续盯盘。<br />
+        {isCloud === true
+          ? "关闭电脑后，云端服务仍继续运行。"
+          : isCloud === false ? "结束运行请双击「停止系统」。" : "正在确认运行位置。"}
       </div>
     </aside>
   );
