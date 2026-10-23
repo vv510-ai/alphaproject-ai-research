@@ -1,0 +1,39 @@
+[Unit]
+Description=AlphaProject Lab server acceptance observer
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/alphaproject-lab-acceptance/completed.json
+ConditionPathExists=!/var/lib/alphaproject-lab-acceptance/suspended.json
+
+[Service]
+Type=oneshot
+User=alphaproject-lab
+Group=alphaproject-lab
+WorkingDirectory=/opt/alphaproject-lab/releases/__RELEASE_ID__
+ExecStart=/opt/alphaproject-lab/releases/__RELEASE_ID__/.venv/bin/python -I -B /opt/alphaproject-lab/releases/__RELEASE_ID__/scripts/server_acceptance.py --state-dir /var/lib/alphaproject-lab-acceptance
+StateDirectory=alphaproject-lab-acceptance
+StateDirectoryMode=0700
+LoadCredential=feishu.json:/etc/alphaproject-lab/credentials/feishu.json
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+TimeoutStartSec=600
+TimeoutStopSec=15
+Restart=no
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/alphaproject-lab-acceptance
+InaccessiblePaths=-/var/lib/alphaproject-lab -/var/lib/alphaproject -/etc/alphaproject-lab/credentials/ai.json -/etc/alphaproject/alpha.env
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+MemoryMax=192M
+CPUQuota=50%
+TasksMax=32

@@ -1,0 +1,12 @@
+[Unit]
+Description=AlphaProject Lab acceptance at 09:35 and 15:35 on weekdays
+
+[Timer]
+OnCalendar=Mon..Fri *-*-* 09:35:00 Asia/Shanghai
+OnCalendar=Mon..Fri *-*-* 15:35:00 Asia/Shanghai
+Persistent=true
+AccuracySec=1s
+Unit=alphaproject-lab-acceptance.service
+
+[Install]
+WantedBy=timers.target

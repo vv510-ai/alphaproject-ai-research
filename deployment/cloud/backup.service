@@ -1,0 +1,34 @@
+[Unit]
+Description=AlphaProject Lab private SQLite online backup
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/alphaproject-lab
+# Installer substitutes the exact SHA-256 and pins this independent operations tool.
+ExecStart=/usr/bin/python3 -I -B /opt/alphaproject-lab/operations/__BACKUP_SOURCE_SHA256__/backup.py create --source /var/lib/alphaproject-lab/watchlist.sqlite3 --root /var/lib/alphaproject-lab/managed-backups --release-file /opt/alphaproject-lab/current/release.json --keep 7 --timeout 60
+TimeoutStartSec=120
+Restart=no
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateNetwork=true
+IPAddressDeny=any
+RestrictAddressFamilies=AF_UNIX
+ProtectSystem=strict
+ProtectHome=true
+# The installer must first create only this empty directory as root:root 0700.
+# The source and all its sidecars stay read-only inside this service's namespace.
+ReadOnlyPaths=/var/lib/alphaproject-lab
+ReadWritePaths=/var/lib/alphaproject-lab/managed-backups
+InaccessiblePaths=-/etc/alphaproject-lab/credentials -/etc/alphaproject/alpha.env
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+MemoryMax=128M
+CPUQuota=50%
+TasksMax=16

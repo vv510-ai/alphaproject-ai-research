@@ -1,19 +1,38 @@
+# Local configuration and credentials
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+.runtime/
+
+# Dependencies and generated files
 .venv/
+venv/
 node_modules/
 dist/
+dist-cloud/
+build/
 __pycache__/
+*.py[cod]
 .pytest_cache/
-*.pyc
-*.tsbuildinfo
-backend/data/
+.ruff_cache/
+coverage/
+
+# Runtime data and logs
 *.db
 *.db-*
-*.sqlite*
-logs/
+*.sqlite
+*.sqlite3
 *.log
-.runtime/
-.mcp.json
-.credentials*
+
+
+# Local verification receipts and third-party research snapshots
+evidence/
+# SQLite sidecar files and local credentials
+*.sqlite3-*
+*.sqlite-*
+*.dpapi
+*.pfx
+*.p12
+.auth_secret
